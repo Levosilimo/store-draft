@@ -2,20 +2,29 @@ import Page from '../../page';
 import { IProductsResponse } from '../../types';
 
 export default class ItemPage extends Page {
+    protected _hash: string;
     HtmlElementInstance: HTMLElement;
     productsResponse: IProductsResponse;
     private itemImagesPointer = 0;
     constructor(productResponse: IProductsResponse) {
         super();
         this.productsResponse = productResponse;
+        this._hash = `/product/${this.productsResponse.id}`;
         this.HtmlElementInstance = this.createHtmlElement();
     }
     protected createHtmlElement(): HTMLElement {
         const HtmlElement = document.createElement('div');
+        const mainWrapper = document.createElement('div');
         const imageWrapper = this.createImageWrapper();
         const propertiesWrapper = this.createPropertiesWrapper();
-        HtmlElement.append(imageWrapper, propertiesWrapper);
+        const buyWrapper = ItemPage.createBuyWrapper();
+        const breadcrumbsElement = document.createElement('p');
+        breadcrumbsElement.innerText = `STORE >> ${this.productsResponse.category} >> ${this.productsResponse.brand} >> ${this.productsResponse.title}`.toUpperCase();
+        breadcrumbsElement.classList.add('item-page-breadcrumbs');
+        mainWrapper.classList.add('item-page-main-wrapper');
+        mainWrapper.append(imageWrapper, propertiesWrapper, buyWrapper);
         HtmlElement.classList.add('item-page-wrapper');
+        HtmlElement.append(breadcrumbsElement, mainWrapper);
         return HtmlElement;
     }
 
@@ -102,5 +111,24 @@ export default class ItemPage extends Page {
 
     hideHtmlElement(): void {
         this.HtmlElementInstance.remove();
+    }
+
+    private static createBuyWrapper() {
+        const HtmlElement = document.createElement('div');
+        HtmlElement.classList.add('item-page-buttons-wrapper');
+        const cartButton = document.createElement('button');
+        cartButton.classList.add('item-page-button');
+        cartButton.innerText = 'Add to cart';
+        cartButton.onclick = (e) => {
+            //TODO: add cart logic
+        };
+        const buyNowButton = document.createElement('button');
+        buyNowButton.classList.add('item-page-button');
+        buyNowButton.innerText = 'Buy now';
+        buyNowButton.onclick = (e) => {
+            //TODO: add buy now logic
+        };
+        HtmlElement.append(cartButton, buyNowButton);
+        return HtmlElement;
     }
 }

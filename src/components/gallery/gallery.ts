@@ -5,11 +5,14 @@ import galleryFilters from './galleryFilters';
 import { response } from '../../index';
 
 export default class Gallery extends Page {
+    protected _hash: string;
     HtmlElementInstance: HTMLElement;
     FiltersInstance: galleryFilters;
     ItemsInstance: galleryItems;
+
     constructor() {
         super();
+        this._hash = `/gallery`;
         this.FiltersInstance = new galleryFilters();
         this.ItemsInstance = new galleryItems(response.products, false);
         this.HtmlElementInstance = this.createHtmlElement();

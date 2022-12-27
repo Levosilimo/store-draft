@@ -1,9 +1,8 @@
-import Page from '../../page';
 import { IProductsResponse } from '../../types';
 import { changePage, GalleryInstance } from '../../index';
 import ItemPage from '../itemPage/itemPage';
 
-export default class galleryItems extends Page {
+export default class galleryItems {
     get productsResponses(): IProductsResponse[] {
         return this._productsResponses;
     }
@@ -15,7 +14,6 @@ export default class galleryItems extends Page {
     private readonly sortingElement: HTMLSelectElement;
     private _productsResponses: IProductsResponse[];
     constructor(productsResponses: IProductsResponse[], isFiltered: boolean) {
-        super();
         this._productsResponses = productsResponses;
         this._isFiltered = isFiltered;
         this.sortingElement = this.createSorting();
@@ -98,7 +96,7 @@ export default class galleryItems extends Page {
         HtmlElement.appendChild(ItemTitle);
         HtmlElement.appendChild(ItemPrice);
         HtmlElement.addEventListener('click', () => {
-            changePage(new ItemPage(productsResponse));
+            changePage(new ItemPage(productsResponse), true);
         });
         return HtmlElement;
     }

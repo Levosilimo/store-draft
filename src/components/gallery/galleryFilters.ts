@@ -1,12 +1,10 @@
-import Page from '../../page';
 import { IFiltersQuery, IProductsResponse } from '../../types';
 import { GalleryInstance, response } from '../../index';
 
-export default class GalleryFilters extends Page {
+export default class GalleryFilters {
     HtmlElementInstance: HTMLElement;
     private query: IFiltersQuery = {};
     constructor() {
-        super();
         this.HtmlElementInstance = this.createHtmlElement();
     }
 
@@ -23,10 +21,13 @@ export default class GalleryFilters extends Page {
     private processQuery(): IProductsResponse[] {
         let result = response.products;
         result = result.filter(
-            (data) => !this.query.brands || this.query.brands.some((val) => data.brand?.includes(val))
+            (productsResponse) =>
+                !this.query.brands || this.query.brands.some((brand) => productsResponse.brand?.includes(brand))
         );
         result = result.filter(
-            (data) => !this.query.categories || this.query.categories.some((val) => data.category?.includes(val))
+            (productsResponse) =>
+                !this.query.categories ||
+                this.query.categories.some((category) => productsResponse.category?.includes(category))
         );
         return result;
     }
@@ -60,7 +61,7 @@ export default class GalleryFilters extends Page {
             if (event.target instanceof HTMLElement) {
                 const clickedElement = event.target;
                 const brand = clickedElement.getAttribute('brand');
-                if (brand !== null) {
+                if (brand) {
                     if (!HtmlElement.classList.contains('checked-filter')) {
                         if (typeof this.query.brands === 'undefined') this.query.brands = [brand];
                         else this.query.brands.push(brand);
@@ -111,7 +112,7 @@ export default class GalleryFilters extends Page {
             if (event.target instanceof HTMLElement) {
                 const clickedElement = event.target;
                 const category = clickedElement.getAttribute('category');
-                if (category !== null) {
+                if (category) {
                     if (!HtmlElement.classList.contains('checked-filter')) {
                         if (typeof this.query.categories === 'undefined') this.query.categories = [category];
                         else this.query.categories.push(category);
