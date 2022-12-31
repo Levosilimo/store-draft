@@ -6,23 +6,17 @@ export default class galleryItems {
     get productsResponses(): IProductsResponse[] {
         return this._productsResponses;
     }
-    get isFiltered(): boolean {
-        return this._isFiltered;
-    }
-    private _isFiltered: boolean;
     HtmlElementInstance: HTMLElement;
     private readonly sortingElement: HTMLSelectElement;
     private _productsResponses: IProductsResponse[];
-    constructor(productsResponses: IProductsResponse[], isFiltered: boolean) {
+    constructor(productsResponses: IProductsResponse[]) {
         this._productsResponses = productsResponses;
-        this._isFiltered = isFiltered;
         this.sortingElement = this.createSorting();
         this.HtmlElementInstance = this.createHtmlElement();
     }
 
-    rerender(productsResponses: IProductsResponse[], isFiltered: boolean) {
+    rerender(productsResponses: IProductsResponse[]) {
         this._productsResponses = productsResponses;
-        this._isFiltered = isFiltered;
         const HtmlElement = document.createElement('div');
         HtmlElement.appendChild(this.sortingElement);
         HtmlElement.appendChild(this.createProductsElement());
@@ -78,7 +72,7 @@ export default class galleryItems {
         });
         sortingSelectElement.addEventListener('change', () => {
             const dataShown = this.getSortedData();
-            GalleryInstance.showData(dataShown, this.isFiltered);
+            GalleryInstance.showData(dataShown);
         });
         return sortingSelectElement;
     }
@@ -96,7 +90,7 @@ export default class galleryItems {
         HtmlElement.appendChild(ItemTitle);
         HtmlElement.appendChild(ItemPrice);
         HtmlElement.addEventListener('click', () => {
-            changePage(new ItemPage(productsResponse), true);
+            changePage(new ItemPage(productsResponse), true, '');
         });
         return HtmlElement;
     }

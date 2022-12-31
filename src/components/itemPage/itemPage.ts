@@ -119,13 +119,13 @@ export default class ItemPage extends Page {
         const cartButton = document.createElement('button');
         cartButton.classList.add('item-page-button');
         cartButton.innerText = 'Add to cart';
-        cartButton.onclick = (e) => {
+        cartButton.onclick = () => {
             //TODO: add cart logic
         };
         const buyNowButton = document.createElement('button');
         buyNowButton.classList.add('item-page-button');
         buyNowButton.innerText = 'Buy now';
-        buyNowButton.onclick = (e) => {
+        buyNowButton.onclick = () => {
             //TODO: add buy now logic
         };
         HtmlElement.append(cartButton, buyNowButton);

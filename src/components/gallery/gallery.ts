@@ -2,7 +2,6 @@ import Page from '../../page';
 import { IProductsResponse } from '../../types';
 import galleryItems from './galleryItems';
 import galleryFilters from './galleryFilters';
-import { response } from '../../index';
 
 export default class Gallery extends Page {
     protected _hash: string;
@@ -14,7 +13,7 @@ export default class Gallery extends Page {
         super();
         this._hash = `/gallery`;
         this.FiltersInstance = new galleryFilters();
-        this.ItemsInstance = new galleryItems(response.products, false);
+        this.ItemsInstance = new galleryItems(this.FiltersInstance.filteredResponses);
         this.HtmlElementInstance = this.createHtmlElement();
     }
 
@@ -26,9 +25,9 @@ export default class Gallery extends Page {
         return HtmlElement;
     }
 
-    showData(productsResponses: IProductsResponse[], isFiltered: boolean): void {
+    showData(productsResponses: IProductsResponse[]): void {
         const oldHtmlElementInstance = this.ItemsInstance.HtmlElementInstance;
-        this.ItemsInstance.rerender(productsResponses, isFiltered);
+        this.ItemsInstance.rerender(productsResponses);
         this.HtmlElementInstance.replaceChild(this.ItemsInstance.HtmlElementInstance, oldHtmlElementInstance);
     }
 
