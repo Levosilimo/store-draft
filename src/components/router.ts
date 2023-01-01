@@ -27,6 +27,20 @@ export default class Router {
                 !Array.isArray(updateQuery.categories) ||
                 updateQuery.categories.some((category) => productsResponse.category === category)
         );
+        result = result.filter(
+            (productsResponse) =>
+                !Array.isArray(updateQuery.price) ||
+                updateQuery.price.length !== 2 ||
+                (productsResponse.price >= Number(updateQuery.price[0]) &&
+                    productsResponse.price <= Number(updateQuery.price[1]))
+        );
+        result = result.filter(
+            (productsResponse) =>
+                !Array.isArray(updateQuery.stock) ||
+                updateQuery.stock.length !== 2 ||
+                (productsResponse.stock >= Number(updateQuery.stock[0]) &&
+                    productsResponse.stock <= Number(updateQuery.stock[1]))
+        );
         return result;
     }
 
@@ -72,15 +86,19 @@ export default class Router {
         const urlQuery = new URLSearchParams(window.location.search);
         const brands = urlQuery.get('brands');
         const categories = urlQuery.get('categories');
+        const price = urlQuery.get('price');
+        const stock = urlQuery.get('stock');
         if (brands) result.brands = brands.split('↕');
         if (categories) result.categories = categories.split('↕');
+        if (price) result.price = price.split('↕');
+        if (stock) result.stock = stock.split('↕');
         return result;
     }
 
     public changeQuery(updateQuery: IFiltersQuery): IProductsResponse[] {
-        Object.assign(this._query, updateQuery);
-        if (this._query.categories?.length === 0) this._query.categories = undefined;
-        if (this._query.brands?.length === 0) this._query.categories = undefined;
+        this._query = updateQuery;
+        if (this._query.categories?.length === 0) delete this._query.categories;
+        if (this._query.brands?.length === 0) delete this._query.brands;
         const urlSearchParams = new URLSearchParams();
         for (const [key, value] of Object.entries(this._query)) {
             let param: string = value.toString();

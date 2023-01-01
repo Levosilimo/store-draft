@@ -22,4 +22,6 @@ export interface IResponse {
 export interface IFiltersQuery {
     brands?: string[];
     categories?: string[];
+    price?: string[];
+    stock?: string[];
 }

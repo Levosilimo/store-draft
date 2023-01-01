@@ -89,6 +89,67 @@ li.checked-filter::before {
     transition: 0.1s;
 }
 
+.filter-slider-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    margin: 100px auto;
+}
+
+.filter-slider-range-wrapper {
+    position: relative;
+    min-height: 50px;
+}
+
+.filter-slider-form-wrapper {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    font-size: 24px;
+    color: #635a5a;
+}
+
+.filter-slider-range-wrapper input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    pointer-events: all;
+    width: 24px;
+    height: 24px;
+    background-color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px #C6C6C6;
+    cursor: pointer;
+}
+
+.filter-slider-range-wrapper input[type=range]::-moz-range-thumb {
+    -webkit-appearance: none;
+    pointer-events: all;
+    width: 24px;
+    height: 24px;
+    background-color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px #C6C6C6;
+    cursor: pointer;
+}
+
+.filter-slider-range-wrapper input[type=range]::-webkit-slider-thumb:hover {
+    background: #f7f7f7;
+}
+
+.filter-slider-range-wrapper input[type=range]::-webkit-slider-thumb:active {
+    box-shadow: inset 0 0 3px #387bbe, 0 0 9px #387bbe;
+    -webkit-box-shadow: inset 0 0 3px #387bbe, 0 0 9px #387bbe;
+}
+
+.filter-slider-range-wrapper input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 2px;
+    width: 100%;
+    position: absolute;
+    background-color: #C6C6C6;
+    pointer-events: none;
+}
+
 .item-page-wrapper {
     display: flex;
     flex-direction: column;
