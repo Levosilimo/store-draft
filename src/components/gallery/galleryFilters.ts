@@ -13,8 +13,8 @@ export default class GalleryFilters {
     protected createHtmlElement(): HTMLElement {
         const HtmlElement = document.createElement('div');
         const HtmlElementButtons = this.createFilterButtons();
-        const HtmlElementBrandsWrapper = this.createBrandFilter();
-        const HtmlElementCategoriesWrapper = this.createCategoryFilter();
+        const HtmlElementBrandsWrapper = this.createCheckboxFilter('brand', 'brands', 'brand');
+        const HtmlElementCategoriesWrapper = this.createCheckboxFilter('category', 'categories', 'category');
         const HtmlElementPriceSlider = this.createSliderFilter('price', 'price');
         const HtmlElementInStockSlider = this.createSliderFilter('stock', 'stock');
         HtmlElement.classList.add('gallery-filters-wrapper');
@@ -67,85 +67,55 @@ export default class GalleryFilters {
         return HtmlElement;
     }
 
-    private createBrandFilter(): HTMLElement {
-        const HtmlElementBrandsWrapper = document.createElement('ul');
-        const brandArr: Array<string> = [];
-        response.products.forEach((productsResponse) => {
-            brandArr.push(productsResponse.brand);
-        });
-        brandArr.sort((item1, item2) => {
-            return item1.localeCompare(item2);
-        });
-        const brandSet: Set<string> = new Set(brandArr);
-        brandSet.forEach((brand) => {
-            HtmlElementBrandsWrapper.appendChild(this.createCheckboxFilter('brand', brand, 'brands', 'brand'));
-        });
-        HtmlElementBrandsWrapper.classList.add('filters-brands-wrapper');
-        HtmlElementBrandsWrapper.addEventListener('changequery', (e: Event) => {
-            if (!isCustomEvent(e)) throw new Error('not a custom event');
-            e.stopPropagation();
-            const brandArr: Array<string> = [];
-            response.products.forEach((productsResponse) => {
-                brandArr.push(productsResponse.brand);
-            });
-            brandArr.sort((item1, item2) => {
-                return item1.localeCompare(item2);
-            });
-            const brandSet: Set<string> = new Set(brandArr);
-            brandSet.forEach((brand) => {
-                if (
-                    !Array.from(HtmlElementBrandsWrapper.children).some(
-                        (element) => element.getAttribute('brand') === brand
-                    )
-                )
-                    HtmlElementBrandsWrapper.appendChild(this.createCheckboxFilter('brand', brand, 'brands', 'brand'));
-            });
-            HtmlElementBrandsWrapper.childNodes.forEach((child) => {
-                const eventCopy = new CustomEvent(e.type, e);
-                child.dispatchEvent(eventCopy);
-            });
-        });
-        return HtmlElementBrandsWrapper;
-    }
-
-    private createCategoryFilter(): HTMLElement {
+    private createCheckboxFilter(
+        attributeName: string,
+        queryField: 'brands' | 'categories',
+        productField: 'brand' | 'category'
+    ) {
         const HtmlElement = document.createElement('ul');
-        const categoryArr: Array<string> = [];
+        const propertyArray: Array<string> = [];
         response.products.forEach((productsResponse) => {
-            categoryArr.push(productsResponse.category);
+            propertyArray.push(productsResponse[productField]);
         });
-        categoryArr.sort((item1, item2) => {
+        propertyArray.sort((item1, item2) => {
             return item1.localeCompare(item2);
         });
-        const categorySet: Set<string> = new Set(categoryArr);
-        categorySet.forEach((category) => {
-            HtmlElement.appendChild(this.createCheckboxFilter('category', category, 'categories', 'category'));
+        const propertySet: Set<string> = new Set(propertyArray);
+        propertySet.forEach((property) => {
+            HtmlElement.appendChild(this.createCheckboxElement(attributeName, property, queryField, productField));
         });
+
         HtmlElement.addEventListener('changequery', (e: Event) => {
             if (!isCustomEvent(e)) throw new Error('not a custom event');
             e.stopPropagation();
-            const categoryArr: Array<string> = [];
+            const propertyArray: Array<string> = [];
             response.products.forEach((productsResponse) => {
-                categoryArr.push(productsResponse.category);
+                propertyArray.push(productsResponse[productField]);
             });
-            categoryArr.sort((item1, item2) => {
+            propertyArray.sort((item1, item2) => {
                 return item1.localeCompare(item2);
             });
-            const categorySet: Set<string> = new Set(categoryArr);
-            categorySet.forEach((category) => {
-                if (!Array.from(HtmlElement.children).some((element) => element.getAttribute('category') === category))
-                    HtmlElement.appendChild(this.createCheckboxFilter('category', category, 'categories', 'category'));
+            const propertySet: Set<string> = new Set(propertyArray);
+            propertySet.forEach((property) => {
+                if (
+                    !Array.from(HtmlElement.children).some(
+                        (element) => element.getAttribute(attributeName) === property
+                    )
+                )
+                    HtmlElement.appendChild(
+                        this.createCheckboxElement(attributeName, property, queryField, productField)
+                    );
             });
             HtmlElement.childNodes.forEach((child) => {
                 const eventCopy = new CustomEvent(e.type, e);
                 child.dispatchEvent(eventCopy);
             });
         });
-        HtmlElement.classList.add('filters-category-wrapper');
+        HtmlElement.classList.add('filters-checkbox-wrapper');
         return HtmlElement;
     }
 
-    private createCheckboxFilter(
+    private createCheckboxElement(
         attributeName: string,
         attributeValue: string,
         queryField: 'brands' | 'categories',
