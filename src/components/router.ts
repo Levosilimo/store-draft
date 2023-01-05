@@ -1,6 +1,6 @@
 import { IFiltersQuery, IProductsResponse } from '../types';
 import ItemPage from './itemPage/itemPage';
-import { changePage, GalleryInstance, response } from '../index';
+import { changePage, GalleryInstance, response, router } from '../index';
 
 export default class Router {
     get query(): IFiltersQuery {
@@ -11,11 +11,12 @@ export default class Router {
         this._query = Router.processQuery();
     }
 
-    public clearQuery(): void {
-        this._query = {};
+    public clearQuery(): IProductsResponse[] {
+        return this.changeQuery({});
     }
 
     private static filterItemsByQuery(updateQuery: IFiltersQuery): IProductsResponse[] {
+        router._query = updateQuery;
         let result = response.products;
         result = result.filter(
             (productsResponse) =>
@@ -41,12 +42,31 @@ export default class Router {
                 (productsResponse.stock >= Number(updateQuery.stock[0]) &&
                     productsResponse.stock <= Number(updateQuery.stock[1]))
         );
+        if (typeof updateQuery.sorting === 'number') {
+            switch (updateQuery.sorting) {
+                case 0: {
+                    result.sort((item1, item2) => item1.price - item2.price);
+                    break;
+                }
+                case 1: {
+                    result.sort((item1, item2) => item2.price - item1.price);
+                    break;
+                }
+                case 2: {
+                    result.sort((item1, item2) => item2.rating - item1.rating);
+                    break;
+                }
+                case 3: {
+                    result.sort((item1, item2) => item2.discountPercentage - item1.discountPercentage);
+                    break;
+                }
+            }
+        } else result.sort((item1, item2) => item1.price - item2.price);
         return result;
     }
 
     public route(): void {
         /* Hash processing */
-        console.log(window.location.hash);
         if (window.location.hash.startsWith('#/product/')) {
             const id = window.location.hash.substring(10);
             const productResponse: IProductsResponse | null =
@@ -88,10 +108,12 @@ export default class Router {
         const categories = urlQuery.get('categories');
         const price = urlQuery.get('price');
         const stock = urlQuery.get('stock');
+        const sorting = urlQuery.get('sorting');
         if (brands) result.brands = brands.split('↕');
         if (categories) result.categories = categories.split('↕');
         if (price) result.price = price.split('↕');
         if (stock) result.stock = stock.split('↕');
+        if (sorting) result.sorting = Number(sorting);
         return result;
     }
 

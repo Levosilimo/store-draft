@@ -1,5 +1,5 @@
 import { IProductsResponse } from '../../types';
-import { changePage, GalleryInstance } from '../../index';
+import { changePage, GalleryInstance, isCustomEvent, router } from '../../index';
 import ItemPage from '../itemPage/itemPage';
 
 export default class galleryItems {
@@ -15,18 +15,23 @@ export default class galleryItems {
         this.HtmlElementInstance = this.createHtmlElement();
     }
 
-    rerender(productsResponses: IProductsResponse[]) {
-        this._productsResponses = productsResponses;
-        const HtmlElement = document.createElement('div');
-        HtmlElement.appendChild(this.sortingElement);
-        HtmlElement.appendChild(this.createProductsElement());
-        this.HtmlElementInstance = HtmlElement;
-    }
-
     protected createHtmlElement(): HTMLElement {
         const HtmlElement = document.createElement('div');
         HtmlElement.appendChild(this.sortingElement);
         HtmlElement.appendChild(this.createProductsElement());
+        HtmlElement.addEventListener('changequery', (e: Event) => {
+            if (!isCustomEvent(e)) throw new Error('not a custom event');
+            e.stopPropagation();
+            if (typeof router.query.sorting === 'number') {
+                this.sortingElement.value = galleryItems.selectOptionsArr[router.query.sorting];
+            } else {
+                this.sortingElement.value = galleryItems.selectOptionsArr[0];
+            }
+            HtmlElement.childNodes.forEach((child) => {
+                const eventCopy = new CustomEvent(e.type, e);
+                child.dispatchEvent(eventCopy);
+            });
+        });
         return HtmlElement;
     }
 
@@ -35,6 +40,19 @@ export default class galleryItems {
         HtmlElement.classList.add('items-wrapper');
         this.getSortedData().forEach((productsResponse) => {
             HtmlElement.appendChild(galleryItems.createProductHtmlElement(productsResponse));
+        });
+        HtmlElement.addEventListener('changequery', (e: Event) => {
+            if (!isCustomEvent(e)) throw new Error('not a custom event');
+            e.stopPropagation();
+            this._productsResponses = e.detail.productResponses;
+            HtmlElement.replaceChildren('');
+            this.getSortedData().forEach((productsResponse) => {
+                HtmlElement.appendChild(galleryItems.createProductHtmlElement(productsResponse));
+            });
+            HtmlElement.childNodes.forEach((child) => {
+                const eventCopy = new CustomEvent(e.type, e);
+                child.dispatchEvent(eventCopy);
+            });
         });
         return HtmlElement;
     }
@@ -54,6 +72,10 @@ export default class galleryItems {
                 sortedData.sort((item1, item2) => item2.rating - item1.rating);
                 break;
             }
+            case galleryItems.selectOptionsArr[3]: {
+                sortedData.sort((item1, item2) => item2.discountPercentage - item1.discountPercentage);
+                break;
+            }
         }
         return sortedData;
     }
@@ -62,23 +84,27 @@ export default class galleryItems {
         'Price: Low to High',
         'Price: High to Low',
         'Avg. Customer Review',
+        'Discount Percentage',
     ];
     private createSorting(): HTMLSelectElement {
         const sortingSelectElement = document.createElement('select');
+        sortingSelectElement.classList.add('sorting-items');
         galleryItems.selectOptionsArr.forEach((item) => {
             const optionElement = document.createElement('option');
             optionElement.textContent = item;
             sortingSelectElement.append(optionElement);
         });
         sortingSelectElement.addEventListener('change', () => {
-            const dataShown = this.getSortedData();
-            GalleryInstance.showData(dataShown);
+            const newQuery = router.query;
+            newQuery.sorting = galleryItems.selectOptionsArr.findIndex((val) => val === sortingSelectElement.value);
+            GalleryInstance.showData(router.changeQuery(newQuery));
         });
         return sortingSelectElement;
     }
 
     private static createProductHtmlElement(productsResponse: IProductsResponse): HTMLElement {
         const HtmlElement = document.createElement('div');
+        HtmlElement.setAttribute('title', productsResponse.title);
         const ItemImage = document.createElement('img');
         const ItemTitle = document.createElement('span');
         const ItemPrice = document.createElement('span');

@@ -30,10 +30,12 @@ export default class ItemPage extends Page {
 
     private createImageWrapper(): HTMLElement {
         const HtmlElement = document.createElement('div');
-        HtmlElement.classList.add('item-page-image-wrapper');
+        HtmlElement.classList.add('item-page-image-block-wrapper');
+        const mainImageWrapper = document.createElement('div');
+        mainImageWrapper.classList.add('item-page-image-wrapper');
         const ItemImage = document.createElement('img');
         ItemImage.src = this.productsResponse.images[this.itemImagesPointer];
-        HtmlElement.appendChild(ItemImage);
+        mainImageWrapper.appendChild(ItemImage);
         const buttonLeftElement = document.createElement('button');
         const buttonRightElement = document.createElement('button');
         buttonLeftElement.innerText = '❮';
@@ -48,8 +50,28 @@ export default class ItemPage extends Page {
             else this.itemImagesPointer = 0;
             ItemImage.src = this.productsResponse.images[this.itemImagesPointer];
         });
-        HtmlElement.prepend(buttonLeftElement);
-        HtmlElement.append(buttonRightElement);
+        mainImageWrapper.prepend(buttonLeftElement);
+        mainImageWrapper.append(buttonRightElement);
+        const sideImageWrapper = document.createElement('div');
+        sideImageWrapper.classList.add('item-page-side-images-wrapper');
+        this.productsResponse.images.forEach((imageURL, index) => {
+            const sideImage = document.createElement('img');
+            sideImage.src = imageURL;
+            sideImage.onmouseover = () => {
+                ItemImage.src = sideImage.src;
+            };
+            sideImage.onmouseout = () => {
+                ItemImage.src = this.productsResponse.images[this.itemImagesPointer];
+            };
+            sideImage.onclick = () => {
+                this.itemImagesPointer = index;
+                ItemImage.src = this.productsResponse.images[this.itemImagesPointer];
+                Array.from(sideImageWrapper.children).forEach((item) => item.classList.remove('activated'));
+                sideImage.classList.add('activated');
+            };
+            sideImageWrapper.append(sideImage);
+        });
+        HtmlElement.append(sideImageWrapper, mainImageWrapper);
         return HtmlElement;
     }
 

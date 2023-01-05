@@ -24,4 +24,5 @@ export interface IFiltersQuery {
     categories?: string[];
     price?: string[];
     stock?: string[];
+    sorting?: number;
 }

@@ -26,9 +26,13 @@ export default class Gallery extends Page {
     }
 
     showData(productsResponses: IProductsResponse[]): void {
-        const oldHtmlElementInstance = this.ItemsInstance.HtmlElementInstance;
-        this.ItemsInstance.rerender(productsResponses);
-        this.HtmlElementInstance.replaceChild(this.ItemsInstance.HtmlElementInstance, oldHtmlElementInstance);
+        const dataUpdate = new CustomEvent('changequery', {
+            detail: {
+                productResponses: productsResponses,
+            },
+        });
+        this.FiltersInstance.HtmlElementInstance.dispatchEvent(dataUpdate);
+        this.ItemsInstance.HtmlElementInstance.dispatchEvent(dataUpdate);
     }
 
     hideHtmlElement(): void {

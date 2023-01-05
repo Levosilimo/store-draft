@@ -30,6 +30,10 @@ body {
     }
 }
 
+.sorting-items > option::before {
+    content: 'Sort by: ';
+}
+
 .gallery-item {
     cursor: pointer;
     padding: 1px;
@@ -48,6 +52,29 @@ body {
     width: 100%;
     height: 200px;
     padding: 2px;
+}
+
+.filters-buttons-wrapper {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+
+.filters-button {
+    background: wheat;
+    transition: all 0.4s;
+    font-size: 1.5rem;
+    border-radius: 0.5rem;
+    width: 100%;
+    margin: 0 2px;
+    padding: 0;
+    border-color: chocolate;
+}
+
+.filters-button.activated {
+    background: lightgreen;
+    transition: 0.2s;
 }
 
 ul {
@@ -87,6 +114,10 @@ li.checked-filter::before {
     text-align: center;
     top: 0;
     transition: 0.1s;
+}
+
+.filter-deactivated {
+    color: gainsboro;
 }
 
 .filter-slider-wrapper {
@@ -177,7 +208,33 @@ li.checked-filter::before {
     height: 600px;
     flex-wrap: wrap;
     align-items: center;
-    background: #fdfdfd;
+}
+
+.item-page-side-images-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: center;
+    border: 2px solid slategrey;
+    padding: 1px 5px;
+    border-radius: 5px;
+}
+
+.item-page-side-images-wrapper > img {
+    float: left;
+    object-fit: scale-down;
+    width: 100px;
+    height: 100px;
+    padding: 2px;
+    border: 1px solid;
+    margin: 1px;
+}
+
+.item-page-image-block-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: nowrap;
 }
 
 .item-page-image-wrapper img {
@@ -190,6 +247,7 @@ li.checked-filter::before {
     padding: 20px 25px;
     border-radius: 50%;
     border-width: 0;
+    margin: 0 5px;
 }
 
 .item-page-property-wrapper {
@@ -239,7 +297,7 @@ li.checked-filter::before {
 }
 
 .rating-tooltip-wrapper {
-    transform: translate(40%, 0);
+    transform: translate(180%, -80%);
     transition: 200ms;
     padding: 20px;
     color: #666666;
@@ -256,6 +314,7 @@ li.checked-filter::before {
 }
 
 .item-page-property-value:hover .rating-tooltip-wrapper {
+    transform: translate(210%, -80%);
     visibility: visible;
     opacity: 1;
     transition: 200ms;
