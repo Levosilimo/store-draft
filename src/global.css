@@ -370,7 +370,12 @@ input[type="text"]:invalid {
     border: 1px solid red;
 }
 
-
+span.dividing-slash {
+    position: relative;
+    right: 82%;
+    z-index: 2;
+    top: 1px;
+}
 
 .buy-now-window {
     position: absolute;
