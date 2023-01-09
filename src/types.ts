@@ -18,3 +18,13 @@ export interface IResponse {
     skip: number;
     total: number;
 }
+
+export interface IFiltersQuery {
+    brands?: string[];
+    categories?: string[];
+    price?: string[];
+    stock?: string[];
+    sorting?: number;
+    search?: string;
+    smallMode?: boolean;
+}

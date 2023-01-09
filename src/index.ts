@@ -1,19 +1,25 @@
 import './global.css';
 import './assets/rsschool-logo.svg';
 import './assets/github-logo.svg';
+import './assets/loupe.svg';
+import './assets/tiles.svg';
 import { IResponse } from './types';
 import Loader from './components/loader/loader';
-import Gallery from './components/gallery/gallery';
-import Page from './page';
+import Router from './components/router';
+import GalleryPage from './components/galleryPage/GalleryPage';
+import Page from './Page';
 
+const loader = new Loader();
 export let response: IResponse = { limit: 0, products: [], total: 0, skip: 0 };
-export let GalleryInstance: Gallery = new Gallery();
+export const router = new Router();
+export let GalleryInstance: GalleryPage = new GalleryPage();
 const nameElement: HTMLElement = document.getElementById('header-name') ?? new HTMLElement();
 nameElement.addEventListener('click', () => {
-    changePage(GalleryInstance);
+    router.clearQuery();
+    GalleryInstance = new GalleryPage();
+    changePage(GalleryInstance, true, '');
 });
 export const mainElement: HTMLElement = document.querySelector('.mainn') ?? new HTMLElement();
-const loader = new Loader();
 loader.load().then((responded) => {
     response = responded;
     response = {
@@ -22,9 +28,15 @@ loader.load().then((responded) => {
         skip: response.skip,
         total: response.total,
     };
-    GalleryInstance = new Gallery();
-    if (mainElement) mainElement.appendChild(GalleryInstance.HtmlElementInstance);
+    router.route();
 });
-export function changePage(page: Page) {
+export function changePage(page: Page, pushHistory?: boolean, search?: string) {
     mainElement.replaceChildren(page.HtmlElementInstance);
+    if (pushHistory) history.pushState({}, '', Router.getLocation(search, page.hash));
 }
+export function isCustomEvent(event: Event): event is CustomEvent {
+    return 'detail' in event;
+}
+
+window.onload = router.route;
+window.onpopstate = router.route;
