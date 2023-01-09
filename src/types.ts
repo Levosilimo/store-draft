@@ -25,4 +25,6 @@ export interface IFiltersQuery {
     price?: string[];
     stock?: string[];
     sorting?: number;
+    search?: string;
+    smallMode?: boolean;
 }

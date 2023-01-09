@@ -1,4 +1,4 @@
-import Page from '../../page';
+import Page from '../../Page';
 import { IProductsResponse } from '../../types';
 
 export default class ItemPage extends Page {
@@ -17,12 +17,29 @@ export default class ItemPage extends Page {
         const mainWrapper = document.createElement('div');
         const imageWrapper = this.createImageWrapper();
         const propertiesWrapper = this.createPropertiesWrapper();
-        const buyWrapper = ItemPage.createBuyWrapper();
+        const buyWrapper = () => {
+            const buttonsWrapper = document.createElement('div');
+            buttonsWrapper.classList.add('item-page-buttons-wrapper');
+            const cartButton = document.createElement('button');
+            cartButton.classList.add('item-page-button');
+            cartButton.innerText = 'Add to cart';
+            cartButton.onclick = () => {
+                //TODO: add cart logic
+            };
+            const buyNowButton = document.createElement('button');
+            buyNowButton.classList.add('item-page-button');
+            buyNowButton.innerText = 'Buy now';
+            buyNowButton.onclick = () => {
+                HtmlElement.append(this.createBuyNowWindow());
+            };
+            buttonsWrapper.append(cartButton, buyNowButton);
+            return buttonsWrapper;
+        };
         const breadcrumbsElement = document.createElement('p');
         breadcrumbsElement.innerText = `STORE >> ${this.productsResponse.category} >> ${this.productsResponse.brand} >> ${this.productsResponse.title}`.toUpperCase();
         breadcrumbsElement.classList.add('item-page-breadcrumbs');
         mainWrapper.classList.add('item-page-main-wrapper');
-        mainWrapper.append(imageWrapper, propertiesWrapper, buyWrapper);
+        mainWrapper.append(imageWrapper, propertiesWrapper, buyWrapper());
         HtmlElement.classList.add('item-page-wrapper');
         HtmlElement.append(breadcrumbsElement, mainWrapper);
         return HtmlElement;
@@ -36,26 +53,11 @@ export default class ItemPage extends Page {
         const ItemImage = document.createElement('img');
         ItemImage.src = this.productsResponse.images[this.itemImagesPointer];
         mainImageWrapper.appendChild(ItemImage);
-        const buttonLeftElement = document.createElement('button');
-        const buttonRightElement = document.createElement('button');
-        buttonLeftElement.innerText = '❮';
-        buttonLeftElement.addEventListener('click', () => {
-            if (this.itemImagesPointer - 1 >= 0) this.itemImagesPointer -= 1;
-            else this.itemImagesPointer = this.productsResponse.images.length - 1;
-            ItemImage.src = this.productsResponse.images[this.itemImagesPointer];
-        });
-        buttonRightElement.innerText = '❯';
-        buttonRightElement.addEventListener('click', () => {
-            if (this.itemImagesPointer + 1 < this.productsResponse.images.length) this.itemImagesPointer += 1;
-            else this.itemImagesPointer = 0;
-            ItemImage.src = this.productsResponse.images[this.itemImagesPointer];
-        });
-        mainImageWrapper.prepend(buttonLeftElement);
-        mainImageWrapper.append(buttonRightElement);
         const sideImageWrapper = document.createElement('div');
         sideImageWrapper.classList.add('item-page-side-images-wrapper');
         this.productsResponse.images.forEach((imageURL, index) => {
             const sideImage = document.createElement('img');
+            if (index === this.itemImagesPointer) sideImage.classList.add('activated');
             sideImage.src = imageURL;
             sideImage.onmouseover = () => {
                 ItemImage.src = sideImage.src;
@@ -131,26 +133,54 @@ export default class ItemPage extends Page {
         return propertyWrapper;
     }
 
-    hideHtmlElement(): void {
-        this.HtmlElementInstance.remove();
+    private createBuyNowWindow(): HTMLElement {
+        const HtmlElement = document.createElement('div');
+        HtmlElement.classList.add('buy-now-window');
+        const personalInfoWrapper = document.createElement('div');
+        personalInfoWrapper.classList.add('personal-info-wrapper');
+        const personalInfoForm = document.createElement('form');
+        personalInfoForm.name = 'personal-info';
+        personalInfoForm.append(
+            ItemPage.createInfoInput('Full name', new RegExp('(^[A-Za-zА-яа-я]{3,})+(?:\\s[A-Za-zА-яа-я]{3,})+$'))
+        );
+        personalInfoForm.append(ItemPage.createInfoInput('Telephone number', new RegExp('^\\+[\\d]{9,}$')));
+        personalInfoForm.append(
+            ItemPage.createInfoInput('Delivery address', new RegExp('(^.{5,})+(?:\\s.{5,})+(?:\\s.{5,})+$'))
+        );
+        personalInfoForm.append(ItemPage.createInfoInput('Email', new RegExp(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)));
+        personalInfoWrapper.append(personalInfoForm);
+        const submitInput = document.createElement('button');
+        submitInput.type = 'submit';
+        submitInput.value = 'submit';
+        submitInput.name = 'submit';
+        submitInput.textContent = 'Submit';
+        submitInput.onclick = () => {
+            if (personalInfoForm.reportValidity()) {
+                HtmlElement.remove();
+            }
+        };
+        HtmlElement.append(personalInfoWrapper, submitInput);
+        return HtmlElement;
     }
 
-    private static createBuyWrapper() {
+    private static createInfoInput(infoType: string, regexPattern: RegExp): HTMLElement {
         const HtmlElement = document.createElement('div');
-        HtmlElement.classList.add('item-page-buttons-wrapper');
-        const cartButton = document.createElement('button');
-        cartButton.classList.add('item-page-button');
-        cartButton.innerText = 'Add to cart';
-        cartButton.onclick = () => {
-            //TODO: add cart logic
-        };
-        const buyNowButton = document.createElement('button');
-        buyNowButton.classList.add('item-page-button');
-        buyNowButton.innerText = 'Buy now';
-        buyNowButton.onclick = () => {
-            //TODO: add buy now logic
-        };
-        HtmlElement.append(cartButton, buyNowButton);
+        HtmlElement.classList.add('personal-info-input-wrapper');
+        const infoTypeTitle = document.createElement('h4');
+        infoTypeTitle.textContent = infoType;
+        const inputElement = document.createElement('input');
+        inputElement.name = infoType;
+        inputElement.type = 'text';
+        inputElement.pattern = regexPattern.source;
+        inputElement.addEventListener('input', () => {
+            if (inputElement.validity.typeMismatch) {
+                inputElement.setCustomValidity(`${infoType} is incorrect`);
+            } else {
+                inputElement.setCustomValidity(``);
+            }
+        });
+        inputElement.required = true;
+        HtmlElement.append(infoTypeTitle, inputElement);
         return HtmlElement;
     }
 }

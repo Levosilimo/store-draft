@@ -1,3 +1,17 @@
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: black;
+    border-radius: 10px;
+    border: 1px solid white;
+}
+
+::-webkit-scrollbar-track {
+    background: #f0f0f0;
+}
+
 body {
     background: #FFF;
     font-family: sans-serif;
@@ -17,6 +31,17 @@ body {
     grid-template-columns: repeat(auto-fill, minmax(368px, 1fr));
     grid-auto-rows: 1fr;
     justify-content: end;
+    perspective: 5000px;
+    box-shadow: inset 0 0 10px 0 #000;
+}
+
+.items-wrapper > h2 {
+    margin: 100% 0.5rem;
+}
+
+.items-wrapper.small {
+    grid-template-columns: repeat(auto-fill, minmax(184px, 1fr));
+    transition: 0.2s;
 }
 
 .gallery {
@@ -28,6 +53,34 @@ body {
     .gallery {
         grid-template-columns: auto;
     }
+}
+
+.sorting-wrapper {
+    display: flex;
+    justify-content: space-between;
+}
+
+button.style-changer-button {
+    width: 24px;
+    height: 24px;
+    margin: 0 8px;
+    cursor: pointer;
+}
+
+button.style-changer-button:last-child {
+    margin: 0;
+}
+
+button.style-changer-button.big {
+    background-size: 26px;
+}
+
+button.style-changer-button.activated {
+    border-color: greenyellow;
+}
+
+.sorting-items {
+    cursor: pointer;
 }
 
 .sorting-items > option::before {
@@ -43,7 +96,32 @@ body {
     flex-direction: column;
     align-items: center;
     height: fit-content;
-    transition: all 0.6s ease-out;
+    background: white;
+    opacity: 0;
+    transform: rotate3d(1, -0.1, -0.1, 100deg);
+    transition: all 0.3s ease-in-out;
+}
+
+.gallery-item.animated {
+    opacity: 1;
+    transform: none;
+    transition: all 0.3s ease-in-out;
+}
+
+.gallery-item.animated:hover {
+    border: 2px solid #111;
+    animation: .7s cubic-bezier(0.06, 0.81, 0.52, 0.89) 0s infinite alternate bg-spin;
+}
+
+@keyframes bg-spin {
+    to {
+        border: 2px solid #eee;
+    }
+}
+
+.gallery-item.animated.small {
+    height: 250px;
+    font-size: .8rem;
 }
 
 .gallery-item img {
@@ -77,24 +155,47 @@ body {
     transition: 0.2s;
 }
 
-ul {
+.filters-search-wrapper > input[type="text"] {
+    background-position: 0;
+    background-size: 20px 20px;
+    background-repeat: no-repeat;
+    width: 80%;
+    font-size: 1.3rem;
+    padding: 0 0 0 24px;
+    display: block;
+    margin: 12px auto;
+    border-radius: 0.3rem;
+    box-shadow: 0 0 8px #bbb;
+}
+
+.filters-checkbox-wrapper > h3 {
+    text-align: center;
+}
+
+.filters-checkbox-wrapper {
+    border: 2px solid;
+    border-radius: 1rem;
+    margin: 8px;
+    box-shadow: 0 0 1px 0 #000;
+}
+
+.filters-checkbox-wrapper > ul {
     height: 300px;
     padding: 0;
     overflow-y: scroll;
-    border: 1px solid;
-    border-radius: 4px;
+    box-shadow: inset 0 0 3px 0;
 }
 
-li {
+.filters-checkbox-wrapper > ul > li {
     cursor: pointer;
     margin: .2rem 0;
 }
 
-li::marker {
+.filters-checkbox-wrapper > ul > li::marker {
     content: none;
 }
 
-li::before {
+.filters-checkbox-wrapper > ul > li::before {
     content: ' ';
     display: inline-block;
     border: 1px solid;
@@ -105,11 +206,11 @@ li::before {
     top: .1rem;
 }
 
-li.checked-filter {
+.filters-checkbox-wrapper > ul > li.checked-filter {
     padding: 3px 0 0 0;
 }
 
-li.checked-filter::before {
+.filters-checkbox-wrapper > ul > li.checked-filter::before {
     content: 'X';
     text-align: center;
     top: 0;
@@ -123,8 +224,16 @@ li.checked-filter::before {
 .filter-slider-wrapper {
     display: flex;
     flex-direction: column;
-    width: 80%;
-    margin: 100px auto;
+    width: 85%;
+    margin: 50px auto;
+    border: 2px solid;
+    padding: 10px 13px 10px 10px;
+    border-radius: 8px;
+    box-shadow: 0 0 1px 0 #000;
+}
+
+.filter-slider-wrapper > h3 {
+    text-align: center;
 }
 
 .filter-slider-range-wrapper {
@@ -228,6 +337,13 @@ li.checked-filter::before {
     padding: 2px;
     border: 1px solid;
     margin: 1px;
+    transition: 0.2s;
+}
+
+.item-page-side-images-wrapper > img.activated {
+    border: 4px solid greenyellow;
+    border-radius: 5px;
+    transition: 0.2s;
 }
 
 .item-page-image-block-wrapper {
@@ -248,6 +364,24 @@ li.checked-filter::before {
     border-radius: 50%;
     border-width: 0;
     margin: 0 5px;
+}
+
+input[type="text"]:invalid {
+    border: 1px solid red;
+}
+
+
+
+.buy-now-window {
+    position: absolute;
+    background: white;
+    padding: 30px;
+    border: 3px solid;
+    border-radius: 2rem;
+}
+
+.personal-info-input-wrapper {
+    padding: 1rem;
 }
 
 .item-page-property-wrapper {
@@ -340,6 +474,14 @@ align-items: flex-start;
     cursor: pointer;
     width: 100%;
     margin: 1rem auto;
+}
+
+.not-found-page {
+    text-align: center;
+}
+
+.error-title-wrapper > h2 {
+    font-size: 3rem;
 }
 
 header {

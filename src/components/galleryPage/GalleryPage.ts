@@ -1,19 +1,19 @@
-import Page from '../../page';
+import Page from '../../Page';
 import { IProductsResponse } from '../../types';
-import galleryItems from './galleryItems';
-import galleryFilters from './galleryFilters';
+import GalleryItems from './GalleryItems';
+import GalleryFilters from './GalleryFilters';
 
-export default class Gallery extends Page {
+export default class GalleryPage extends Page {
     protected _hash: string;
     HtmlElementInstance: HTMLElement;
-    FiltersInstance: galleryFilters;
-    ItemsInstance: galleryItems;
+    FiltersInstance: GalleryFilters;
+    ItemsInstance: GalleryItems;
 
     constructor() {
         super();
         this._hash = `/gallery`;
-        this.FiltersInstance = new galleryFilters();
-        this.ItemsInstance = new galleryItems(this.FiltersInstance.filteredResponses);
+        this.FiltersInstance = new GalleryFilters();
+        this.ItemsInstance = new GalleryItems(this.FiltersInstance.filteredResponses);
         this.HtmlElementInstance = this.createHtmlElement();
     }
 
@@ -25,7 +25,7 @@ export default class Gallery extends Page {
         return HtmlElement;
     }
 
-    showData(productsResponses: IProductsResponse[]): void {
+    showData(productsResponses: IProductsResponse[]): IProductsResponse[] {
         const dataUpdate = new CustomEvent('changequery', {
             detail: {
                 productResponses: productsResponses,
@@ -33,9 +33,6 @@ export default class Gallery extends Page {
         });
         this.FiltersInstance.HtmlElementInstance.dispatchEvent(dataUpdate);
         this.ItemsInstance.HtmlElementInstance.dispatchEvent(dataUpdate);
-    }
-
-    hideHtmlElement(): void {
-        this.HtmlElementInstance.remove();
+        return productsResponses;
     }
 }

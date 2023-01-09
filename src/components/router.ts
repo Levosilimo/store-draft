@@ -1,6 +1,7 @@
 import { IFiltersQuery, IProductsResponse } from '../types';
-import ItemPage from './itemPage/itemPage';
+import ItemPage from './itemPage/ItemPage';
 import { changePage, GalleryInstance, response, router } from '../index';
+import NotFoundPage from './notFoundPage/NotFoundPage';
 
 export default class Router {
     get query(): IFiltersQuery {
@@ -42,6 +43,17 @@ export default class Router {
                 (productsResponse.stock >= Number(updateQuery.stock[0]) &&
                     productsResponse.stock <= Number(updateQuery.stock[1]))
         );
+        result = result.filter(
+            (productsResponse) =>
+                !updateQuery.search ||
+                productsResponse.discountPercentage.toString(10).includes(updateQuery.search) ||
+                productsResponse.price.toString(10).includes(updateQuery.search) ||
+                productsResponse.rating.toString(10).includes(updateQuery.search) ||
+                productsResponse.brand.toLowerCase().includes(updateQuery.search) ||
+                productsResponse.category.toLowerCase().includes(updateQuery.search) ||
+                productsResponse.description.toLowerCase().includes(updateQuery.search) ||
+                productsResponse.title.toLowerCase().includes(updateQuery.search)
+        );
         if (typeof updateQuery.sorting === 'number') {
             switch (updateQuery.sorting) {
                 case 0: {
@@ -76,13 +88,13 @@ export default class Router {
             if (productResponse) {
                 changePage(new ItemPage(productResponse));
             } else {
-                //TODO: change page to 404;
-                changePage(GalleryInstance);
+                changePage(new NotFoundPage());
             }
             return;
         }
         switch (window.location.hash) {
-            case '#/gallery': {
+            case '#/gallery':
+            case '': {
                 changePage(GalleryInstance);
                 break;
             }
@@ -92,8 +104,7 @@ export default class Router {
                 break;
             }
             default: {
-                //TODO: change page to 404;
-                changePage(GalleryInstance);
+                changePage(new NotFoundPage());
             }
         }
         /* Query processing */
@@ -109,11 +120,15 @@ export default class Router {
         const price = urlQuery.get('price');
         const stock = urlQuery.get('stock');
         const sorting = urlQuery.get('sorting');
+        const search = urlQuery.get('search');
+        const smallMode = urlQuery.get('smallMode');
         if (brands) result.brands = brands.split('↕');
         if (categories) result.categories = categories.split('↕');
         if (price) result.price = price.split('↕');
         if (stock) result.stock = stock.split('↕');
         if (sorting) result.sorting = Number(sorting);
+        if (search) result.search = search;
+        if (smallMode) result.smallMode = Boolean(smallMode);
         return result;
     }
 
@@ -121,6 +136,7 @@ export default class Router {
         this._query = updateQuery;
         if (this._query.categories?.length === 0) delete this._query.categories;
         if (this._query.brands?.length === 0) delete this._query.brands;
+        if (this._query.search?.length === 0) delete this._query.search;
         const urlSearchParams = new URLSearchParams();
         for (const [key, value] of Object.entries(this._query)) {
             let param: string = value.toString();

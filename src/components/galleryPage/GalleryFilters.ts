@@ -13,12 +13,14 @@ export default class GalleryFilters {
     protected createHtmlElement(): HTMLElement {
         const HtmlElement = document.createElement('div');
         const HtmlElementButtons = this.createFilterButtons();
+        const HtmlElementSearch = this.createSearchFilter();
         const HtmlElementBrandsWrapper = this.createCheckboxFilter('brand', 'brands', 'brand');
         const HtmlElementCategoriesWrapper = this.createCheckboxFilter('category', 'categories', 'category');
         const HtmlElementPriceSlider = this.createSliderFilter('price', 'price');
         const HtmlElementInStockSlider = this.createSliderFilter('stock', 'stock');
         HtmlElement.classList.add('gallery-filters-wrapper');
         HtmlElement.appendChild(HtmlElementButtons);
+        HtmlElement.appendChild(HtmlElementSearch);
         HtmlElement.appendChild(HtmlElementBrandsWrapper);
         HtmlElement.appendChild(HtmlElementCategoriesWrapper);
         HtmlElement.appendChild(HtmlElementPriceSlider);
@@ -38,7 +40,7 @@ export default class GalleryFilters {
 
     private processQuery(): IProductsResponse[] {
         this.filteredResponses = router.changeQuery(this.query);
-        return this.filteredResponses;
+        return GalleryInstance.showData(this.filteredResponses);
     }
 
     private createFilterButtons(): HTMLElement {
@@ -49,7 +51,7 @@ export default class GalleryFilters {
         buttonClearFiltersElement.textContent = 'Reset filters';
         buttonClearFiltersElement.onclick = () => {
             this.query = {};
-            GalleryInstance.showData(this.processQuery());
+            this.processQuery();
         };
         const buttonCopyLinkElement = document.createElement('button');
         buttonCopyLinkElement.textContent = 'Copy link';
@@ -67,12 +69,47 @@ export default class GalleryFilters {
         return HtmlElement;
     }
 
+    private createSearchFilter(): HTMLElement {
+        const HtmlElement = document.createElement('div');
+        HtmlElement.classList.add('filters-search-wrapper');
+        const searchInputElement = document.createElement('input');
+        searchInputElement.type = 'text';
+        searchInputElement.placeholder = 'Search for products...';
+        searchInputElement.title = "Type in any info about the product you're looking for";
+        searchInputElement.onkeyup = () => {
+            this.query.search = searchInputElement.value.trim().toLowerCase();
+            this.processQuery();
+        };
+        //webpack adds ruining slash in css =(
+        searchInputElement.style.backgroundImage = 'url(assets/loupe.svg)';
+        HtmlElement.append(searchInputElement);
+        HtmlElement.addEventListener('changequery', (e: Event) => {
+            if (!isCustomEvent(e)) throw new Error('not a custom event');
+            e.stopPropagation();
+            searchInputElement.value = router.query.search ?? '';
+        });
+        return HtmlElement;
+    }
+
     private createCheckboxFilter(
         attributeName: string,
         queryField: 'brands' | 'categories',
         productField: 'brand' | 'category'
     ) {
-        const HtmlElement = document.createElement('ul');
+        const HtmlElement = document.createElement('div');
+        HtmlElement.classList.add('filters-checkbox-wrapper');
+        HtmlElement.addEventListener('changequery', (e: Event) => {
+            if (!isCustomEvent(e)) throw new Error('not a custom event');
+            e.stopPropagation();
+            HtmlElement.childNodes.forEach((child) => {
+                const eventCopy = new CustomEvent(e.type, e);
+                child.dispatchEvent(eventCopy);
+            });
+        });
+        const naming = document.createElement('h3');
+        naming.textContent = productField.charAt(0).toUpperCase() + productField.slice(1);
+        HtmlElement.append(naming);
+        const checkboxListElement = document.createElement('ul');
         const propertyArray: Array<string> = [];
         response.products.forEach((productsResponse) => {
             propertyArray.push(productsResponse[productField]);
@@ -82,10 +119,12 @@ export default class GalleryFilters {
         });
         const propertySet: Set<string> = new Set(propertyArray);
         propertySet.forEach((property) => {
-            HtmlElement.appendChild(this.createCheckboxElement(attributeName, property, queryField, productField));
+            checkboxListElement.appendChild(
+                this.createCheckboxElement(attributeName, property, queryField, productField)
+            );
         });
 
-        HtmlElement.addEventListener('changequery', (e: Event) => {
+        checkboxListElement.addEventListener('changequery', (e: Event) => {
             if (!isCustomEvent(e)) throw new Error('not a custom event');
             e.stopPropagation();
             const propertyArray: Array<string> = [];
@@ -98,20 +137,21 @@ export default class GalleryFilters {
             const propertySet: Set<string> = new Set(propertyArray);
             propertySet.forEach((property) => {
                 if (
-                    !Array.from(HtmlElement.children).some(
+                    !Array.from(checkboxListElement.children).some(
                         (element) => element.getAttribute(attributeName) === property
                     )
                 )
-                    HtmlElement.appendChild(
+                    checkboxListElement.appendChild(
                         this.createCheckboxElement(attributeName, property, queryField, productField)
                     );
             });
-            HtmlElement.childNodes.forEach((child) => {
+            checkboxListElement.childNodes.forEach((child) => {
                 const eventCopy = new CustomEvent(e.type, e);
                 child.dispatchEvent(eventCopy);
             });
         });
-        HtmlElement.classList.add('filters-checkbox-wrapper');
+        checkboxListElement.classList.add('filters-checkbox-list');
+        HtmlElement.append(checkboxListElement);
         return HtmlElement;
     }
 
@@ -157,7 +197,7 @@ export default class GalleryFilters {
                             if (this.query[queryField]?.length === 0) delete this.query[queryField];
                         }
                     }
-                    GalleryInstance.showData(this.processQuery());
+                    this.processQuery();
                 }
             }
         });
@@ -188,7 +228,10 @@ export default class GalleryFilters {
 
     private createSliderFilter(queryField: 'price' | 'stock', productField: keyof IProductsResponse): HTMLElement {
         const HtmlElement = document.createElement('div');
+        const naming = document.createElement('h3');
+        naming.textContent = productField.charAt(0).toUpperCase() + productField.slice(1);
         HtmlElement.classList.add('filter-slider-wrapper');
+        HtmlElement.append(naming);
         const sliderWrapper = document.createElement('div');
         sliderWrapper.classList.add('filter-slider-range-wrapper');
         const fromInputSlider = document.createElement('input');
@@ -201,6 +244,7 @@ export default class GalleryFilters {
         fromInputSlider.min = `${Math.min(...fieldArray)}`;
         fromInputSlider.max = `${Math.max(...fieldArray)}`;
         if (Array.isArray(this.query[queryField]) && this.query[queryField]?.length === 2)
+            // if-statement guarantees that this.query[queryField] !== null
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             fromInputSlider.value = `${this.query[queryField]![0]}`;
         else fromInputSlider.value = `${Math.min(...fieldArray)}`;
@@ -211,6 +255,7 @@ export default class GalleryFilters {
         toInputSlider.min = `${Math.min(...fieldArray)}`;
         toInputSlider.max = `${Math.max(...fieldArray)}`;
         if (Array.isArray(this.query[queryField]) && this.query[queryField]?.length === 2)
+            // if-statement guarantees that this.query[queryField] !== null
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             toInputSlider.value = `${this.query[queryField]![1]}`;
         else toInputSlider.value = `${Math.max(...fieldArray)}`;
@@ -233,7 +278,12 @@ export default class GalleryFilters {
             else if (Array.isArray(this.query[queryField]) && this.query[queryField]?.length === 2)
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 this.query[queryField]![0] = fromInputSlider.value;
-            GalleryInstance.showData(this.processQuery());
+            if (
+                this.query[queryField]?.[0] === fromInputSlider.min &&
+                this.query[queryField]?.[1] === fromInputSlider.max
+            )
+                delete this.query[queryField];
+            this.processQuery();
         };
         toInputSlider.oninput = () => {
             controlToSlider(fromInputSlider, toInputSlider, maxValueElement);
@@ -245,7 +295,9 @@ export default class GalleryFilters {
             else if (Array.isArray(this.query[queryField]) && this.query[queryField]?.length === 2)
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 this.query[queryField]![1] = toInputSlider.value;
-            GalleryInstance.showData(this.processQuery());
+            if (this.query[queryField]?.[0] === toInputSlider.min && this.query[queryField]?.[1] === toInputSlider.max)
+                delete this.query[queryField];
+            this.processQuery();
         };
         fillSlider(fromInputSlider, toInputSlider, '#C6C6C6', '#25daa5', toInputSlider);
         setToggleAccessible(toInputSlider);
@@ -263,23 +315,26 @@ export default class GalleryFilters {
             fromInputSlider.max = `${Math.max(...fieldArray)}`;
             toInputSlider.min = `${Math.min(...fieldArray)}`;
             toInputSlider.max = `${Math.max(...fieldArray)}`;
-            if (Array.isArray(this.query[queryField]) && this.query[queryField]?.length === 2) {
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                fromInputSlider.value = `${this.query[queryField]![0]}`;
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                toInputSlider.value = `${this.query[queryField]![1]}`;
-            } else {
-                fromInputSlider.value = fromInputSlider.min;
-                toInputSlider.value = toInputSlider.max;
+
+            const filteredFieldArray: Array<number> = [];
+            this.filteredResponses.forEach((product) => {
+                const property = product[productField];
+                if (typeof property === 'number') filteredFieldArray.push(property);
+            });
+            if (this.filteredResponses.length === 0) return;
+            if (
+                !(
+                    fromInputSlider.value === `${Math.min(...filteredFieldArray)}` &&
+                    toInputSlider.value === `${Math.max(...filteredFieldArray)}`
+                )
+            ) {
+                fromInputSlider.value = `${Math.min(...filteredFieldArray)}`;
+                toInputSlider.value = `${Math.max(...filteredFieldArray)}`;
             }
             minValueElement.textContent = fromInputSlider.value;
             maxValueElement.textContent = toInputSlider.value;
             fillSlider(fromInputSlider, toInputSlider, '#C6C6C6', '#25daa5', toInputSlider);
         });
         return HtmlElement;
-    }
-
-    hideHtmlElement(): void {
-        this.HtmlElementInstance.remove();
     }
 }
